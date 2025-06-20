@@ -159,8 +159,6 @@ if [ $? -eq 0 ]; then
     echo "  GUI版: python3 gui_tool.py"
     echo "  テスト実行: python3 test_tool.py"
     echo "  診断実行: python3 test_dlib_version.py"
-    echo "  Proxy情報: python3 cli_tool.py --proxy-info"
-    echo "  Proxy接続テスト: python3 cli_tool.py --test-proxy"
     echo ""
     if [ "$MEDIAPIPE_COMPATIBLE" = true ]; then
         echo "✓ 最高精度: MediaPipe が利用可能です"
@@ -170,9 +168,6 @@ if [ $? -eq 0 ]; then
         echo "  利用可能: Dlib と OpenCV による検出"
     fi
     echo ""
-    echo "Proxy環境での使用:"
-    echo "  export HTTP_PROXY=http://proxy.company.com:8080"
-    echo "  export HTTPS_PROXY=http://proxy.company.com:8080"
 else
     echo ""
     echo "インストールに問題があります。"

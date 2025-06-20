@@ -15,7 +15,7 @@
 - **OpenCV YuNet**: 検証により唯一十分な精度を持つ手法
 - **軽量・高速**: 最新の軽量モデルで高速処理
 - **OpenCV標準搭載**: 追加インストール不要（OpenCV 4.5.4以上）
-- **Proxy対応**: 企業環境でのモデルダウンロード対応
+- **シンプルなダウンロード**: 特別な設定不要でモデルダウンロード
 
 ### YuNetの優位性
 - **実証済み精度**: 実際の検証で十分な精度を確認
@@ -125,8 +125,6 @@ install.bat
 - ✅ 詳細な進捗表示
 - ✅ 高度なエラーハンドリング
 - ✅ コマンドラインオプション対応
-
-詳細は [PowerShell インストールガイド](docs/POWERSHELL_GUIDE.md) を参照してください。
 
 ### 3. 手動インストール
 
@@ -255,41 +253,7 @@ source face_mosaic_env/bin/activate  # macOS/Linux
 # face_mosaic_env\Scripts\activate  # Windows
 ```
 
-### Proxy環境での使用
-
-#### 企業環境・Proxyサーバー対応
-
-**環境変数設定**:
-```bash
-# Linux/macOS
-export HTTP_PROXY=http://proxy.company.com:8080
-export HTTPS_PROXY=http://proxy.company.com:8080
-export NO_PROXY=localhost,127.0.0.1,.company.com
-
-# 認証付きProxy
-export HTTP_PROXY=http://username:password@proxy.company.com:8080
-export HTTPS_PROXY=http://username:password@proxy.company.com:8080
-
-# Windows (コマンドプロンプト)
-set HTTP_PROXY=http://proxy.company.com:8080
-set HTTPS_PROXY=http://proxy.company.com:8080
-
-# Windows (PowerShell)
-$env:HTTP_PROXY="http://proxy.company.com:8080"
-$env:HTTPS_PROXY="http://proxy.company.com:8080"
-```
-
-**Proxy設定確認**:
-```bash
-# Proxy設定情報を表示
-python cli_tool.py --proxy-info
-
-# Proxy接続テスト
-python cli_tool.py --test-proxy
-
-# 詳細なProxyテスト
-python test_proxy.py
-```
+## 🔧 高度な使用方法
 
 **SSL証明書問題の対応**:
 ```bash
@@ -349,15 +313,6 @@ pip install dlib-binary
 - YuNet: 0.12秒（最高速）
 - MediaPipe: 0.15秒
 - Dlib HOG: 0.25秒
-
-## 📚 詳細ドキュメント
-
-より詳細な情報については、[docsディレクトリ](docs/)をご覧ください：
-
-- **[PowerShell インストールガイド](docs/POWERSHELL_GUIDE.md)** - Windows PowerShell での詳細インストール方法
-- **[Proxy対応ガイド](docs/PROXY_SUPPORT_COMPLETE.md)** - 企業環境・Proxyサーバー対応の詳細
-- **[Windows エンコーディングガイド](docs/WINDOWS_ENCODING_GUIDE.md)** - バッチファイルの文字化け対策
-- **[開発者向けドキュメント](docs/)** - 統合履歴、技術詳細など
 
 ## 📝 ライセンス
 

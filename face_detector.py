@@ -96,57 +96,28 @@ class AdvancedFaceDetector:
             print(f"YuNet初期化中にエラー: {e}")
     
     def _download_yunet_model(self) -> Optional[str]:
-        """YuNetモデルのダウンロード（Proxy対応）"""
+        """YuNetモデルのダウンロード"""
         model_path = "face_detection_yunet_2023mar.onnx"
         
         if os.path.exists(model_path):
             return model_path
         
         try:
-            from proxy_utils import download_with_proxy, get_proxy_manager
-            
-            proxy_manager = get_proxy_manager()
-            if proxy_manager.is_proxy_enabled():
-                print("Proxy環境でYuNetモデルをダウンロードします")
+            import urllib.request
             
             print("YuNetモデルをダウンロード中...")
             
             # YuNetモデルファイル（OpenCV公式）
-            model_url = "https://github.com/opencv/opencv_zoo/raw/master/models/face_detection_yunet/face_detection_yunet_2023mar.onnx"
+            model_url = "https://github.com/opencv/opencv_zoo/raw/main/models/face_detection_yunet/face_detection_yunet_2023mar.onnx"
             
-            # Proxy対応ダウンロード
-            if download_with_proxy(model_url, model_path):
-                print("YuNetモデルのダウンロードが完了しました")
-                return model_path
-            else:
-                print("YuNetモデルのダウンロードに失敗しました")
-                return None
-                
-        except ImportError:
-            print("Proxy対応モジュールが見つかりません。従来の方法でダウンロードを試行します...")
-            return self._download_yunet_model_fallback()
-        except Exception as e:
-            print(f"YuNetモデルのダウンロードに失敗: {e}")
-            return self._download_yunet_model_fallback()
-    
-    def _download_yunet_model_fallback(self) -> Optional[str]:
-        """YuNetモデルのダウンロード（従来方法）"""
-        model_path = "face_detection_yunet_2023mar.onnx"
-        
-        try:
-            import urllib.request
-            
-            print("従来の方法でYuNetモデルをダウンロード中...")
-            model_url = "https://github.com/opencv/opencv_zoo/raw/master/models/face_detection_yunet/face_detection_yunet_2023mar.onnx"
-            
-            # ダウンロード
+            # シンプルなダウンロード
             urllib.request.urlretrieve(model_url, model_path)
             
             print("YuNetモデルのダウンロードが完了しました")
             return model_path
-            
+                
         except Exception as e:
-            print(f"従来方法でのYuNetモデルダウンロードに失敗: {e}")
+            print(f"YuNetモデルのダウンロードに失敗: {e}")
             return None
     
     def detect_faces_yunet(self, image: np.ndarray) -> List[Tuple[int, int, int, int]]:
@@ -336,6 +307,156 @@ def is_yunet_supported() -> bool:
         return False
     except:
         return False
+
+
+class AdvancedImageProcessor:
+    """YuNet専用画像処理クラス"""
+    
+    def __init__(self, detection_method: str = 'yunet'):
+        """
+        画像処理クラスの初期化
+        
+        Args:
+            detection_method: 検出手法（'yunet'固定）
+        """
+        self.detection_method = detection_method
+        self.face_detector = AdvancedFaceDetector(detection_method)
+    
+    def process_directory(self, input_dir: str, output_dir: str, 
+                         mosaic_ratio: float = 0.1, 
+                         supported_formats: tuple = ('.jpg', '.jpeg', '.png', '.bmp', '.tiff', '.webp'),
+                         dry_run: bool = False) -> dict:
+        """
+        ディレクトリ内の画像を一括処理
+        
+        Args:
+            input_dir: 入力ディレクトリ
+            output_dir: 出力ディレクトリ
+            mosaic_ratio: モザイク比率
+            supported_formats: サポートする画像形式
+            dry_run: 実際の処理は行わず、対象ファイルのみ表示
+            
+        Returns:
+            処理結果の統計情報
+        """
+        import os
+        from pathlib import Path
+        from tqdm import tqdm
+        
+        input_path = Path(input_dir)
+        output_path = Path(output_dir)
+        
+        if not input_path.exists():
+            raise FileNotFoundError(f"入力ディレクトリが見つかりません: {input_dir}")
+        
+        # 対象ファイルを収集
+        image_files = []
+        for ext in supported_formats:
+            image_files.extend(input_path.rglob(f"*{ext}"))
+            image_files.extend(input_path.rglob(f"*{ext.upper()}"))
+        
+        if not image_files:
+            print(f"対象画像ファイルが見つかりません: {input_dir}")
+            return {'total': 0, 'success': 0, 'failed': 0, 'faces_detected': 0}
+        
+        print(f"対象ファイル数: {len(image_files)}")
+        
+        if dry_run:
+            print("=== 処理対象ファイル一覧 ===")
+            for img_file in image_files:
+                print(f"  {img_file}")
+            return {'total': len(image_files), 'success': 0, 'failed': 0, 'faces_detected': 0}
+        
+        # 出力ディレクトリ作成
+        output_path.mkdir(parents=True, exist_ok=True)
+        
+        # 統計情報
+        stats = {'total': len(image_files), 'success': 0, 'failed': 0, 'faces_detected': 0}
+        
+        # 進捗バー付きで処理
+        with tqdm(image_files, desc="画像処理中") as pbar:
+            for img_file in pbar:
+                try:
+                    # 相対パスを保持して出力先を決定
+                    rel_path = img_file.relative_to(input_path)
+                    output_file = output_path / rel_path
+                    
+                    # 出力ディレクトリ作成
+                    output_file.parent.mkdir(parents=True, exist_ok=True)
+                    
+                    # 画像処理
+                    success = self.face_detector.process_image(
+                        str(img_file), str(output_file), mosaic_ratio
+                    )
+                    
+                    if success:
+                        stats['success'] += 1
+                        # 顔検出数をカウント（簡易実装）
+                        import cv2
+                        image = cv2.imread(str(img_file))
+                        if image is not None:
+                            faces = self.face_detector.detect_faces(image)
+                            stats['faces_detected'] += len(faces)
+                    else:
+                        stats['failed'] += 1
+                    
+                    # 進捗バー更新
+                    pbar.set_postfix({
+                        'Success': stats['success'],
+                        'Failed': stats['failed'],
+                        'Faces': stats['faces_detected']
+                    })
+                    
+                except Exception as e:
+                    print(f"エラー ({img_file}): {e}")
+                    stats['failed'] += 1
+        
+        return stats
+    
+    def process_single_image(self, input_path: str, output_path: str, 
+                           mosaic_ratio: float = 0.1) -> bool:
+        """
+        単一画像の処理
+        
+        Args:
+            input_path: 入力画像パス
+            output_path: 出力画像パス
+            mosaic_ratio: モザイク比率
+            
+        Returns:
+            処理成功の可否
+        """
+        return self.face_detector.process_image(input_path, output_path, mosaic_ratio)
+    
+    def get_image_files(self, directory: str, 
+                       supported_formats: tuple = ('.jpg', '.jpeg', '.png', '.bmp', '.tiff', '.webp')) -> list:
+        """
+        指定ディレクトリから画像ファイルを取得
+        
+        Args:
+            directory: 検索対象ディレクトリ
+            supported_formats: サポートする画像形式
+            
+        Returns:
+            画像ファイルパスのリスト
+        """
+        from pathlib import Path
+        
+        directory_path = Path(directory)
+        if not directory_path.exists():
+            return []
+        
+        image_files = []
+        for ext in supported_formats:
+            # 小文字と大文字の両方に対応
+            image_files.extend(directory_path.rglob(f"*{ext}"))
+            image_files.extend(directory_path.rglob(f"*{ext.upper()}"))
+        
+        # 重複を除去してソート
+        unique_files = list(set(image_files))
+        unique_files.sort()
+        
+        return [str(f) for f in unique_files]
 
 
 # 使用例

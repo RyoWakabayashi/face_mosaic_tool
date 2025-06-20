@@ -20,7 +20,7 @@ class AdvancedFaceMosaicGUI:
         self.root.geometry("700x600")
         
         # 処理用オブジェクト
-        self.processor = None
+        self.processor = AdvancedImageProcessor(detection_method='yunet')
         self.processing = False
         
         self.setup_ui()
@@ -377,7 +377,7 @@ class AdvancedFaceMosaicGUI:
                     self.status_var.set(f"処理中: {rel_path}")
                     
                     # 画像処理
-                    if self.processor.detector.process_image(image_path, output_path, ratio):
+                    if self.processor.process_single_image(image_path, output_path, ratio):
                         success_count += 1
                         
                         # 顔検出数をカウント（ログから推定）

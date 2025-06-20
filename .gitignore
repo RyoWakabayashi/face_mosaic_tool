@@ -3,11 +3,5 @@ sample_outputs
 # Python
 __pycache__
 
-# Dlib Models
-*.dat
-
-# OpenCV Models
-*.pbtxt
-
 # ONNX Models
 *.onnx
