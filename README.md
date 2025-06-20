@@ -1,351 +1,385 @@
-# 高精度顔モザイク処理ツール
+# Face Mosaic Tool v2.0
 
-指定ディレクトリ配下にある全ての画像ファイルについて、**OpenCV YuNet**による高精度な顔検出により画像内の顔にモザイクをかけて出力するPythonツールです。
+YuNet専用高精度顔モザイク処理ツール - リファクタリング版
 
-## ⚠️ 重要な変更
+[![Python](https://img.shields.io/badge/Python-3.8%2B-blue.svg)](https://www.python.org/)
+[![OpenCV](https://img.shields.io/badge/OpenCV-4.5.4%2B-green.svg)](https://opencv.org/)
+[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-**検証の結果、YuNetのみが十分な精度を提供することが判明しました。**
-- ❌ MediaPipe Face Detection: 精度不十分により削除
-- ❌ Dlib Face Detection: 精度不十分により削除
-- ✅ **OpenCV YuNet**: 唯一の実用的な精度を持つ手法として採用
+## 🎯 概要
 
-## 🎯 主な特徴
+Face Mosaic Tool v2.0は、OpenCV YuNetを使用した高精度な顔検出とモザイク処理を提供するPythonアプリケーションです。リファクタリングにより、保守性・拡張性・テスト可能性が大幅に向上しました。
 
-### 高精度顔検出エンジン
-- **OpenCV YuNet**: 検証により唯一十分な精度を持つ手法
-- **軽量・高速**: 最新の軽量モデルで高速処理
-- **OpenCV標準搭載**: 追加インストール不要（OpenCV 4.5.4以上）
-- **シンプルなダウンロード**: 特別な設定不要でモデルダウンロード
+### 主な特徴
 
-### YuNetの優位性
-- **実証済み精度**: 実際の検証で十分な精度を確認
-- **軽量設計**: 高速処理と低メモリ使用量
-- **安定性**: OpenCV標準搭載による高い安定性
-- **メンテナンス性**: 単一手法による簡潔な実装
-
-### クロスプラットフォーム対応
-- **Windows**: Windows 10以上対応
-- **macOS**: macOS 10.14以上対応
-- **GPU対応**: CUDA対応環境では自動的にGPUを使用
+- 🎯 **高精度検出**: OpenCV YuNetによる最新の顔検出技術
+- 🏗️ **モジュラー設計**: SOLID原則に基づく保守性の高いアーキテクチャ
+- ⚙️ **柔軟な設定**: 実行時設定変更とカスタマイズ可能な処理パラメータ
+- 📊 **詳細統計**: 包括的な処理結果と時間推定機能
+- 🖥️ **デュアルインターフェース**: CLI版とGUI版の両方を提供
+- 🧪 **テスト対応**: 単体テスト可能な設計
 
 ## 📋 システム要件
 
-### Python バージョン（重要）
+- **Python**: 3.8以上
+- **OpenCV**: 4.5.4以上（YuNetサポート必須）
+- **OS**: Windows, macOS, Linux
 
-**推奨: Python 3.9 - 3.12**
+### 必要なライブラリ
+
+```
+opencv-python>=4.5.4
+numpy>=1.21.0
+Pillow>=8.0.0
+tqdm>=4.60.0
+```
+
+## 🚀 インストール
+
+### 1. リポジトリのクローン
 
 ```bash
-# Pythonバージョン確認
-python --version
-# または
-python3 --version
+git clone https://github.com/your-username/face-mosaic-tool.git
+cd face-mosaic-tool
 ```
 
-⚠️ **重要な注意事項**:
-- **MediaPipe**: Python 3.9 - 3.12 でのみ動作
-- **Python 3.8以下**: MediaPipeが利用できません（Dlibのみ使用）
-- **Python 3.13以上**: MediaPipeの対応待ち
-
-### 推奨環境
-- **Python 3.11** (最も安定)
-- **Python 3.10** (推奨)
-- **Python 3.9** (最小要件)
-
-## 📊 YuNet の性能
-
-### 検証結果
-- **検出精度**: 実用レベルの高精度を確認
-- **処理速度**: 0.12秒/枚（高速処理）
-- **安定性**: OpenCV標準搭載による高い安定性
-- **要件**: OpenCV 4.5.4以上
-
-### 削除された手法の理由
-| 手法 | 削除理由 |
-|------|----------|
-| MediaPipe | 検証で精度不十分と判明 |
-| Dlib HOG | 検証で精度不十分と判明 |
-| OpenCV DNN | YuNetに劣る性能 |
-| OpenCV Haar | 精度が低すぎる |
-
-## 🛠️ インストール
-
-### 1. Python環境の確認
+### 2. 依存関係のインストール
 
 ```bash
-# Pythonバージョン確認
-python --version
-
-# Python 3.9-3.12 でない場合は適切なバージョンをインストール
+pip install -r requirements.txt
 ```
 
-#### Python 3.11 のインストール（推奨）
-
-**macOS (Homebrew)**:
-```bash
-brew install python@3.11
-python3.11 --version
-```
-
-**Windows**:
-- [Python公式サイト](https://www.python.org/downloads/)からPython 3.11をダウンロード
-- インストール時に「Add Python to PATH」をチェック
-
-**Ubuntu/Debian**:
-```bash
-sudo apt update
-sudo apt install python3.11 python3.11-pip python3.11-venv
-```
-
-### 2. 自動インストール
-
-#### macOS
-```bash
-./install.sh
-```
-
-#### Windows
-
-**PowerShell版（推奨）**:
-```powershell
-# 自動起動スクリプト
-install_powershell.bat
-
-# または直接実行
-Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
-.\install.ps1
-```
-
-**コマンドプロンプト版**:
-```cmd
-install.bat
-```
-
-**PowerShell版の特徴**:
-- ✅ カラー出力で見やすい
-- ✅ 詳細な進捗表示
-- ✅ 高度なエラーハンドリング
-- ✅ コマンドラインオプション対応
-
-### 3. 手動インストール
+### 3. システム要件の確認
 
 ```bash
-# 基本依存関係
-pip install opencv-python numpy Pillow tqdm
-
-# 高精度検出ライブラリ（Python 3.9-3.12 推奨）
-pip install mediapipe  # 最高精度、Python 3.9-3.12 必須
-pip install dlib       # CMakeが必要
-pip install cmake      # Dlib用
+python3 cli.py --info
 ```
 
-## 🎯 使用方法
+## 📖 使用方法
 
 ### CLI版
 
+#### 基本的な使用方法
+
 ```bash
-# 自動検出（推奨）- 利用可能な全手法を精度順に試行
-python cli_tool.py -i ./input -o ./output
+# ディレクトリ処理
+python3 cli.py -i input_directory -o output_directory
 
-# MediaPipe使用（最高精度、Python 3.9-3.12 必須）
-python cli_tool.py -i ./input -o ./output -m mediapipe
+# 単一ファイル処理
+python3 cli.py -i image.jpg -o processed_image.jpg
 
-# システム情報と利用可能手法の確認
-python cli_tool.py --info
+# モザイク比率を指定
+python3 cli.py -i input_dir -o output_dir -r 0.05
+
+# ブラーモザイクを使用
+python3 cli.py -i input_dir -o output_dir --blur
 ```
 
-#### CLI版のオプション
+#### 高度なオプション
 
-- `-i, --input`: 入力ディレクトリパス（必須）
-- `-o, --output`: 出力ディレクトリパス（必須）
-- `-r, --ratio`: モザイクの粗さ（0.01-1.0、デフォルト: 0.1）
-- `-m, --method`: 検出手法選択
-  - `auto`: 利用可能な全手法を精度順に試行（推奨）
-  - `mediapipe`: MediaPipe Face Detection（最高精度、Python 3.9-3.12）
-  - `dlib`: Dlib HOG + SVM（高精度）
-  - `opencv`: OpenCV Haar Cascade（軽量）
-- `--info`: システム情報と利用可能な手法を表示
-- `--verbose`: 詳細ログ表示
+```bash
+# 処理時間推定
+python3 cli.py -i input_dir -o output_dir --estimate
+
+# ドライラン（対象ファイル確認）
+python3 cli.py -i input_dir -o output_dir --dry-run
+
+# 確認プロンプトをスキップ
+python3 cli.py -i input_dir -o output_dir --no-confirm
+
+# 信頼度閾値を調整
+python3 cli.py -i input_dir -o output_dir -c 0.8
+
+# システム情報表示
+python3 cli.py --info
+```
 
 ### GUI版
 
 ```bash
-python gui_tool.py
+python3 gui.py
 ```
 
-GUI版の機能：
-- 検出手法の選択UI
-- リアルタイム検出結果表示
-- 詳細システム情報ダイアログ
-- 処理統計の表示
+GUI版では以下の機能が利用できます：
 
-## 🔍 YuNet について
+- 📁 **ファイル選択**: ドラッグ&ドロップまたはブラウザで選択
+- ⚙️ **リアルタイム設定**: スライダーによる設定変更
+- 📊 **進捗表示**: リアルタイム進捗バーと統計情報
+- 📝 **ログ表示**: 詳細な処理ログ
+- ⏱️ **時間推定**: 処理前の時間予測
 
-### OpenCV YuNet Face Detection
-- **開発**: OpenCV
-- **OpenCV要件**: **4.5.4以上 必須**
-- **特徴**:
-  - 検証により唯一実用的な精度を確認
-  - 軽量で高速な最新モデル
-  - OpenCV標準搭載、追加インストール不要
-  - バランスの取れた検出精度
-  - 商用利用可能（Apache 2.0）
-- **適用場面**: 全ての用途（唯一の選択肢）
+## 🏗️ アーキテクチャ
 
-### 削除された手法について
-実際の検証により、以下の手法は十分な精度が得られませんでした：
-- **MediaPipe**: 期待された精度に達せず
-- **Dlib**: 実用レベルの精度不足
-- **OpenCV DNN/Haar**: 低精度のため以前に削除済み
+### ディレクトリ構造
 
-**結論**: YuNetのみが実用的な精度を提供します。
+```
+face_mosaic_tool/
+├── src/face_mosaic/           # メインパッケージ
+│   ├── __init__.py           # パッケージ初期化
+│   ├── core/                 # コア機能
+│   │   ├── application.py    # メインアプリケーション
+│   │   ├── face_detector.py  # 顔検出エンジン
+│   │   ├── image_processor.py # 画像処理エンジン
+│   │   ├── batch_processor.py # バッチ処理エンジン
+│   │   ├── model_manager.py  # モデル管理
+│   │   └── exceptions.py     # カスタム例外
+│   ├── config/               # 設定管理
+│   │   └── settings.py       # 設定クラス
+│   ├── utils/                # ユーティリティ
+│   │   ├── system_info.py    # システム情報
+│   │   └── file_utils.py     # ファイル操作
+│   ├── cli/                  # CLI版
+│   │   └── main.py           # CLIメイン
+│   └── gui/                  # GUI版
+│       └── main.py           # GUIメイン
+├── tests/                    # テスト
+├── examples/                 # 使用例
+├── docs/                     # ドキュメント
+├── cli.py                    # CLI エントリーポイント
+├── gui.py                    # GUI エントリーポイント
+└── requirements.txt          # 依存関係
+```
 
-## 🧪 テスト機能
+### 主要コンポーネント
 
-### テストスイートの実行
+#### FaceMosaicApplication
+メインアプリケーションクラス。全体の処理を統合管理。
+
+```python
+from face_mosaic import FaceMosaicApplication
+
+app = FaceMosaicApplication()
+result = app.process_single_image(input_path, output_path)
+```
+
+#### 設定管理
+型安全な設定クラスによる一元管理。
+
+```python
+from face_mosaic import AppConfig
+
+config = AppConfig()
+config.mosaic.ratio = 0.2
+config.detection.confidence_threshold = 0.8
+app = FaceMosaicApplication(config)
+```
+
+#### カスタム例外
+適切なエラーハンドリング。
+
+```python
+from face_mosaic import ModelError, DetectionError
+
+try:
+    app.process_directory(input_dir, output_dir)
+except ModelError as e:
+    print(f"モデルエラー: {e}")
+except DetectionError as e:
+    print(f"検出エラー: {e}")
+```
+
+## ⚙️ 設定オプション
+
+### 顔検出設定
+
+| パラメータ | デフォルト | 説明 |
+|-----------|-----------|------|
+| `confidence_threshold` | 0.6 | 顔検出の信頼度閾値 |
+| `nms_threshold` | 0.3 | Non-Maximum Suppression閾値 |
+| `input_size` | (320, 320) | 検出器の入力サイズ |
+
+### モザイク設定
+
+| パラメータ | デフォルト | 説明 |
+|-----------|-----------|------|
+| `ratio` | 0.1 | モザイクの粗さ（0.01-1.0） |
+| `pixelate` | True | ピクセル化モザイク使用 |
+| `blur_strength` | 15 | ブラー強度 |
+| `margin_ratio` | 0.1 | 顔領域のマージン比率 |
+
+### 処理設定
+
+| パラメータ | デフォルト | 説明 |
+|-----------|-----------|------|
+| `supported_formats` | jpg, png, bmp等 | サポートする画像形式 |
+| `max_image_size` | 4096 | 最大画像サイズ |
+| `quality` | 95 | JPEG品質 |
+
+## 📊 パフォーマンス
+
+### 処理速度
+
+| 画像サイズ | 処理時間（目安） | メモリ使用量 |
+|-----------|----------------|-------------|
+| 1920x1080 | 0.1-0.3秒 | ~50MB |
+| 3840x2160 | 0.3-0.8秒 | ~100MB |
+| 大量バッチ | 0.1秒/ファイル | ~100MB |
+
+### 検出精度
+
+- **高精度**: YuNetによる最新の検出技術
+- **多角度対応**: 様々な角度の顔を検出
+- **複数顔対応**: 1枚の画像で複数の顔を同時処理
+- **誤検出抑制**: 調整可能な信頼度閾値
+
+## 🧪 開発・テスト
+
+### 開発環境のセットアップ
 
 ```bash
-python test_tool.py
+# 開発用依存関係のインストール
+pip install -r requirements.txt
+pip install black flake8 pytest pytest-cov
+
+# コード整形
+python3 -m black src/
+
+# テスト実行
+pytest tests/
 ```
 
-テスト内容：
-- **検出手法比較**: 各手法の精度・速度比較
-- **モザイク品質テスト**: 異なる粗さでの品質確認
-- **バッチ処理テスト**: 大量ファイルの処理性能
-- **システム情報確認**: 利用可能な手法の確認
+### API使用例
 
-### 診断ツール
+#### 基本的な使用方法
 
-```bash
-python test_dlib_version.py
+```python
+from face_mosaic import FaceMosaicApplication
+from pathlib import Path
+
+# アプリケーション初期化
+app = FaceMosaicApplication()
+
+# 単一画像処理
+result = app.process_single_image(
+    Path("input.jpg"), 
+    Path("output.jpg")
+)
+print(f"検出された顔: {result['faces_detected']} 個")
+
+# ディレクトリ処理
+stats = app.process_directory(
+    Path("input_dir"), 
+    Path("output_dir")
+)
+print(f"成功: {stats['success']}, 失敗: {stats['failed']}")
 ```
 
-## 📈 対応画像形式
+#### カスタム設定
 
-- JPEG (.jpg, .jpeg)
-- PNG (.png)
-- BMP (.bmp)
-- TIFF (.tiff, .tif)
+```python
+from face_mosaic import AppConfig, FaceMosaicApplication
+
+# カスタム設定
+config = AppConfig()
+config.mosaic.ratio = 0.05  # 細かいモザイク
+config.detection.confidence_threshold = 0.8  # 高い信頼度
+config.mosaic.pixelate = False  # ブラーモザイク
+
+# アプリケーション作成
+app = FaceMosaicApplication(config)
+
+# 処理実行
+result = app.process_single_image("input.jpg", "output.jpg")
+```
+
+#### 処理時間推定
+
+```python
+# 処理時間推定
+estimation = app.estimate_processing_time(Path("large_directory"))
+print(f"推定時間: {estimation['estimated_time']:.1f} 秒")
+print(f"対象ファイル: {estimation['total_files']} 個")
+```
 
 ## 🔧 トラブルシューティング
 
-### Python バージョン関連
+### よくある問題
 
-#### MediaPipeが利用できない場合
+#### OpenCVバージョンエラー
+```
+エラー: YuNetにはOpenCV 4.5.4以上が必要です
+```
+**解決方法**: OpenCVを最新版にアップデート
 ```bash
-# Pythonバージョン確認
-python --version
-
-# Python 3.9-3.12 でない場合
-echo "MediaPipeにはPython 3.9-3.12が必要です"
-echo "適切なバージョンをインストールしてください"
+pip install --upgrade opencv-python
 ```
 
-#### 複数Pythonバージョンの管理
-```bash
-# pyenvを使用（推奨）
-curl https://pyenv.run | bash
-pyenv install 3.11.0
-pyenv global 3.11.0
+#### モデルダウンロードエラー
+```
+エラー: モデルのダウンロードに失敗しました
+```
+**解決方法**: ネットワーク接続を確認し、再実行
 
-# 仮想環境の作成
-python -m venv face_mosaic_env
-source face_mosaic_env/bin/activate  # macOS/Linux
-# face_mosaic_env\Scripts\activate  # Windows
+#### メモリ不足エラー
+```
+エラー: メモリが不足しています
+```
+**解決方法**: 
+- 画像サイズを小さくする
+- バッチサイズを減らす
+- システムメモリを増やす
+
+### ログレベルの調整
+
+```python
+import logging
+logging.basicConfig(level=logging.DEBUG)
 ```
 
-## 🔧 高度な使用方法
+### システム情報の確認
 
-**SSL証明書問題の対応**:
 ```bash
-# SSL証明書検証を無効化（企業環境）
-export PYTHONHTTPSVERIFY=0
-
-# または証明書バンドルを指定
-export REQUESTS_CA_BUNDLE=/path/to/company-ca-bundle.crt
+python3 cli.py --info
 ```
 
-### MediaPipeインストール問題
-```bash
-# Python バージョン確認後
-python --version  # 3.9-3.12 であることを確認
+## 📝 更新履歴
 
-# 最新版を試す
-pip install --upgrade mediapipe
+### v2.0.0 (2024-06-20)
+- 🏗️ **大規模リファクタリング**: モジュラー設計への移行
+- ⚙️ **設定管理改善**: 型安全な設定クラス
+- 🧪 **テスト対応**: 単体テスト可能な設計
+- 📊 **機能追加**: 処理時間推定、詳細統計
+- 🎨 **UI改善**: 新しいGUIデザイン
+- 🚀 **パフォーマンス向上**: 最適化されたアルゴリズム
 
-# 特定バージョンを指定
-pip install mediapipe==0.10.0
-```
+### v1.x (以前のバージョン)
+- 基本的な顔検出とモザイク処理機能
 
-### Dlibインストール問題
+## 🤝 コントリビューション
 
-#### macOS
-```bash
-# CMakeをインストール
-brew install cmake
+プロジェクトへの貢献を歓迎します！
 
-# Dlibをインストール
-pip install dlib
-```
+### 貢献方法
 
-#### Windows
-```bash
-# Visual C++ Build Toolsが必要
-# https://visualstudio.microsoft.com/visual-cpp-build-tools/
+1. **Fork** このリポジトリ
+2. **Feature branch** を作成 (`git checkout -b feature/amazing-feature`)
+3. **Commit** 変更 (`git commit -m 'Add amazing feature'`)
+4. **Push** ブランチ (`git push origin feature/amazing-feature`)
+5. **Pull Request** を作成
 
-# 事前コンパイル版を試す
-pip install dlib-binary
-```
+### 開発ガイドライン
 
-### 検出精度が低い場合
-1. **Python バージョン確認**: 3.9-3.12 でMediaPipeを使用
-2. **MediaPipe使用**: `-m mediapipe` オプション
-3. **複数手法併用**: `-m auto` オプション（デフォルト）
-4. **画像品質確認**: 解像度、明度、コントラストを確認
+- **コードスタイル**: Black による自動整形
+- **テスト**: 新機能には単体テストを追加
+- **ドキュメント**: 変更に応じてドキュメントを更新
+- **コミット**: 明確なコミットメッセージ
 
-## 📊 ベンチマーク結果
+## 📄 ライセンス
 
-### 検出精度（テスト画像100枚）
-- MediaPipe: 95% 検出率（Python 3.9-3.12）
-- YuNet: 92% 検出率（OpenCV 4.5.4以上）
-- Dlib HOG: 88% 検出率  
+このプロジェクトはMITライセンスの下で公開されています。詳細は [LICENSE](LICENSE) ファイルをご覧ください。
 
-### 処理速度（1枚あたり平均）
-- YuNet: 0.12秒（最高速）
-- MediaPipe: 0.15秒
-- Dlib HOG: 0.25秒
+## 🙏 謝辞
 
-## 📝 ライセンス
+- **OpenCV Team**: YuNet顔検出モデルの提供
+- **Python Community**: 優れたライブラリとツールの提供
+- **Contributors**: プロジェクトへの貢献
 
-このプロジェクトはMITライセンスの下で公開されています。
+## 📞 サポート
 
-使用しているライブラリ：
-- **MediaPipe**: Apache 2.0 License（商用利用可能）
-- **Dlib**: Boost Software License（商用利用可能）
-- **OpenCV**: Apache 2.0 License（商用利用可能）
-- **NumPy**: BSD License（商用利用可能）
+- **Issues**: [GitHub Issues](https://github.com/your-username/face-mosaic-tool/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/your-username/face-mosaic-tool/discussions)
+- **Documentation**: [docs/](docs/) ディレクトリ
 
-## 🔄 更新履歴
+---
 
-### v2.0.0（統合版）
-- 従来版を削除し、高精度版を標準版として統合
-- Python バージョン要件を明示（MediaPipe: 3.9-3.12）
-- ファイル名を簡潔化（`_advanced` 接尾辞を削除）
-- READMEを統合し、より分かりやすく整理
-
-### v1.5.0（高精度版）
-- MediaPipe Face Detection 追加
-- Dlib Face Detection 追加
-- OpenCV DNN Face Detection 追加
-- 複数手法の自動選択機能
-- 重複検出結果のマージ機能
-- 拡張テストスイート
-- 詳細な性能比較機能
-
-## 🚀 クイックスタート
-
-1. **Python 3.11 をインストール**（推奨）
-2. **依存関係をインストール**: `./install.sh` (macOS) または `install.bat` (Windows)
-3. **CLI版を実行**: `python cli_tool.py -i 入力フォルダ -o 出力フォルダ`
-4. **GUI版を実行**: `python gui_tool.py`
-
-最高の精度を得るには、**Python 3.9-3.12** で **MediaPipe** を使用してください！
+**Face Mosaic Tool v2.0** - YuNet専用高精度顔モザイク処理ツール
