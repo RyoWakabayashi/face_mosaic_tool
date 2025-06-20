@@ -1,0 +1,10 @@
+opencv-python>=4.8.0
+Pillow>=10.0.0
+numpy>=1.24.0
+tkinter-tooltip>=2.0.0
+argparse
+pathlib
+tqdm>=4.65.0
+mediapipe>=0.10.0
+dlib>=19.24.0
+cmake>=3.25.0
