@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 高精度顔モザイク処理GUI版
-MediaPipe、Dlib、OpenCV DNNを使用した高精度検出
+OpenCV YuNetによる高精度検出
 """
 
 import tkinter as tk
@@ -157,8 +157,8 @@ class AdvancedFaceMosaicGUI:
             self.log("  エラー: 高精度な顔検出手法が利用できません")
         
         self.log("")
-        self.log("注意: 検証の結果、MediaPipeとDlibは十分な精度が得られませんでした。")
-        self.log("YuNetのみが実用的な精度を提供します。")
+        self.log("注意: YuNetのみが実用的な精度を提供します。")
+        self.log("他の手法は検証により精度不十分と判明したため削除されました。")
         self.log("")
         
     def show_detailed_system_info(self):
@@ -190,6 +190,7 @@ class AdvancedFaceMosaicGUI:
         text_widget.insert(tk.END, "\n=== 削除された手法 ===\n")
         text_widget.insert(tk.END, "✗ MediaPipe Face Detection (精度不十分により削除)\n")
         text_widget.insert(tk.END, "✗ Dlib Face Detection (精度不十分により削除)\n")
+        text_widget.insert(tk.END, "✗ OpenCV DNN/Haar (低精度により以前に削除)\n")
         text_widget.insert(tk.END, "\n注意: 検証の結果、YuNetのみが実用的な精度を提供します。\n")
         
         text_widget.config(state=tk.DISABLED)

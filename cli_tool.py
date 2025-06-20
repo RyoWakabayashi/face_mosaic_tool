@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 高精度顔モザイク処理CLI版
-MediaPipe、Dlib、OpenCV DNNを使用した高精度検出
+OpenCV YuNetによる高精度検出
 """
 
 import argparse
@@ -25,9 +25,8 @@ def main():
         epilog="""
 使用例:
   python cli_tool.py -i ./input_images -o ./output_images
-  python cli_tool.py -i /path/to/input -o /path/to/output -r 0.05 -m mediapipe
-  python cli_tool.py -i /path/to/input -o /path/to/output -m yunet
-  python cli_tool.py --input ./photos --output ./processed --method auto --info
+  python cli_tool.py -i /path/to/input -o /path/to/output -r 0.05
+  python cli_tool.py --input ./photos --output ./processed --info
   
 検出手法:
   yunet     - OpenCV YuNet（検証により唯一十分な精度を持つ手法）
@@ -73,8 +72,8 @@ def main():
             print("✗ OpenCV YuNet (OpenCV 4.5.4以上が必要)")
             print("  エラー: 高精度な顔検出手法が利用できません")
         
-        print("\n注意: 検証の結果、MediaPipeとDlibは十分な精度が得られませんでした。")
-        print("YuNetのみが実用的な精度を提供します。")
+        print("\n注意: YuNetのみが実用的な精度を提供します。")
+        print("他の手法は検証により精度不十分と判明したため削除されました。")
         print()
     
     # Proxy情報表示
