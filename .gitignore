@@ -147,3 +147,4 @@ test_outputs*/
 *.onnx
 temp/
 tmp/
+*.pt

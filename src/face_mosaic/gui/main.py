@@ -179,6 +179,22 @@ class GUIApplication:
             mosaic_frame, text="ブラー", variable=self.mosaic_type_var, value="blur"
         ).grid(row=0, column=1)
 
+        # 物体検出オプション
+        self.use_object_detection_var = tk.BooleanVar(value=False)
+        self.object_labels_var = tk.StringVar(value="person,car")
+        ttk.Checkbutton(
+            section_frame,
+            text="物体検出 (PyTorch FasterRCNN)",
+            variable=self.use_object_detection_var,
+            command=self.update_settings,
+        ).grid(row=3, column=0, sticky=tk.W, pady=(5, 0))
+        ttk.Label(section_frame, text="物体ラベル(カンマ区切り):").grid(
+            row=3, column=1, sticky=tk.W, padx=(0, 5), pady=(5, 0)
+        )
+        ttk.Entry(section_frame, textvariable=self.object_labels_var, width=30).grid(
+            row=3, column=2, sticky=(tk.W, tk.E), padx=(0, 5), pady=(5, 0)
+        )
+
     def create_execution_section(self, parent: ttk.Frame, row: int) -> None:
         """実行ボタンセクション作成"""
         # セクションフレーム
@@ -356,11 +372,27 @@ class GUIApplication:
         """設定を更新"""
         if not self.app:
             return
-
         try:
             # モザイク設定更新
             self.app.config.mosaic.pixelate = self.mosaic_type_var.get() == "pixelate"
+            # 物体検出設定更新
+            use_obj = self.use_object_detection_var.get()
+            labels = [
+                s.strip() for s in self.object_labels_var.get().split(",") if s.strip()
+            ]
+            if use_obj:
+                from ..core.object_detector import ObjectDetector
 
+                if (
+                    not hasattr(self.app.image_processor, "object_detector")
+                    or self.app.image_processor.object_detector is None
+                ):
+                    self.app.image_processor.object_detector = ObjectDetector()
+                self.app.image_processor.use_object_detection = True
+                self.app.image_processor.object_labels = labels
+            else:
+                self.app.image_processor.use_object_detection = False
+                self.app.image_processor.object_labels = []
         except Exception as e:
             self.log(f"設定更新エラー: {e}")
 

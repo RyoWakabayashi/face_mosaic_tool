@@ -12,6 +12,7 @@ from PIL import Image, ImageFilter
 from ..config.settings import MosaicConfig, ProcessingConfig
 from ..core.exceptions import ImageProcessingError, InvalidImageError
 from ..core.face_detector import FaceDetector
+from ..core.object_detector import ObjectDetector
 from ..utils.file_utils import validate_image_format, ensure_directory
 
 
@@ -23,6 +24,9 @@ class ImageProcessor:
         face_detector: FaceDetector,
         mosaic_config: MosaicConfig,
         processing_config: ProcessingConfig,
+        object_detector: ObjectDetector = None,
+        object_labels: list = None,
+        use_object_detection: bool = False,
     ):
         """
         初期化
@@ -31,10 +35,16 @@ class ImageProcessor:
             face_detector: 顔検出インスタンス
             mosaic_config: モザイク設定
             processing_config: 処理設定
+            object_detector: 物体検出インスタンス（オプション）
+            object_labels: モザイクをかける物体のラベルリスト（オプション）
+            use_object_detection: 物体検出を使用するかどうか（オプション）
         """
         self.face_detector = face_detector
         self.mosaic_config = mosaic_config
         self.processing_config = processing_config
+        self.object_detector = object_detector
+        self.object_labels = object_labels or []
+        self.use_object_detection = use_object_detection
 
     def apply_mosaic(
         self, image: np.ndarray, faces: List[Tuple[int, int, int, int]]
@@ -147,70 +157,77 @@ class ImageProcessor:
         Raises:
             ImageProcessingError: 処理失敗時
         """
-        try:
-            # 入力ファイル検証
-            validate_image_format(input_path, self.processing_config.supported_formats)
+        # 入力ファイル検証
+        validate_image_format(input_path, self.processing_config.supported_formats)
 
-            # 画像読み込み
-            image = cv2.imread(str(input_path))
-            if image is None:
-                raise InvalidImageError(f"画像を読み込めません: {input_path}")
+        # 画像読み込み
+        image = cv2.imread(str(input_path))
+        if image is None:
+            raise InvalidImageError(f"画像を読み込めません: {input_path}")
 
-            # 画像サイズチェック
-            height, width = image.shape[:2]
-            max_size = self.processing_config.max_image_size
-            if max(width, height) > max_size:
-                # リサイズ
-                scale = max_size / max(width, height)
-                new_width = int(width * scale)
-                new_height = int(height * scale)
-                image = cv2.resize(image, (new_width, new_height))
-                print(
-                    f"画像をリサイズしました: {width}x{height} -> {new_width}x{new_height}"
-                )
-
-            # 顔検出
-            faces = self.face_detector.detect_faces(image)
-
-            # モザイク処理
-            if faces:
-                processed_image = self.apply_mosaic(image, faces)
-                print(f"{len(faces)}個の顔を検出: {input_path.name}")
-            else:
-                processed_image = image
-                print(f"顔が検出されませんでした: {input_path.name}")
-
-            # 出力ディレクトリ作成
-            ensure_directory(output_path.parent)
-
-            # 画像保存
-            success = cv2.imwrite(
-                str(output_path),
-                processed_image,
-                [cv2.IMWRITE_JPEG_QUALITY, self.processing_config.quality],
+        # 画像サイズチェック
+        height, width = image.shape[:2]
+        max_size = self.processing_config.max_image_size
+        if max(width, height) > max_size:
+            # リサイズ
+            scale = max_size / max(width, height)
+            new_width = int(width * scale)
+            new_height = int(height * scale)
+            image = cv2.resize(image, (new_width, new_height))
+            print(
+                f"画像をリサイズしました: {width}x{height} -> {new_width}x{new_height}"
             )
 
-            if not success:
-                raise ImageProcessingError(f"画像の保存に失敗しました: {output_path}")
+        # 顔検出
+        faces = self.face_detector.detect_faces(image)
+        # 物体検出（オプション）
+        objects = []
+        if self.use_object_detection and self.object_detector and self.object_labels:
+            # OpenCVはBGR, torchvisionはRGBなので変換
+            rgb_image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+            detected = self.object_detector.detect(
+                rgb_image, target_labels=self.object_labels
+            )
+            for obj in detected:
+                x1, y1, x2, y2 = obj["box"]
+                w, h = x2 - x1, y2 - y1
+                objects.append((x1, y1, w, h))
 
-            print(f"処理完了: {output_path}")
+        # モザイク処理
+        all_targets = faces + objects
+        if all_targets:
+            processed_image = self.apply_mosaic(image, all_targets)
+            print(
+                f"{len(faces)}個の顔, {len(objects)}個の物体を検出: {input_path.name}"
+            )
+        else:
+            processed_image = image
+            print(f"顔・物体が検出されませんでした: {input_path.name}")
 
-            return {
-                "success": True,
-                "faces_detected": len(faces),
-                "input_path": str(input_path),
-                "output_path": str(output_path),
-                "original_size": (width, height),
-                "processed_size": processed_image.shape[:2][::-1],
-            }
+        # 出力ディレクトリ作成
+        ensure_directory(output_path.parent)
 
-        except Exception as e:
-            return {
-                "success": False,
-                "error": str(e),
-                "input_path": str(input_path),
-                "output_path": str(output_path),
-            }
+        # 画像保存
+        success = cv2.imwrite(
+            str(output_path),
+            processed_image,
+            [cv2.IMWRITE_JPEG_QUALITY, self.processing_config.quality],
+        )
+
+        if not success:
+            raise ImageProcessingError(f"画像の保存に失敗しました: {output_path}")
+
+        print(f"処理完了: {output_path}")
+
+        return {
+            "success": True,
+            "faces_detected": len(faces),
+            "objects_detected": len(objects),
+            "input_path": str(input_path),
+            "output_path": str(output_path),
+            "original_size": (width, height),
+            "processed_size": processed_image.shape[:2][::-1],
+        }
 
     def get_processor_info(self) -> Dict[str, Any]:
         """

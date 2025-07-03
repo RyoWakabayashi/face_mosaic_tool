@@ -12,6 +12,7 @@ from typing import Optional
 from ..core.application import FaceMosaicApplication
 from ..config.settings import AppConfig
 from ..core.exceptions import FaceMosaicError
+from ..core.object_detector import ObjectDetector
 from ..utils.system_info import print_system_info
 
 
@@ -61,6 +62,19 @@ class CLIApplication:
         )
         parser.add_argument(
             "--blur", action="store_true", help="ピクセル化の代わりにブラーを使用"
+        )
+
+        # 物体検出オプション
+        parser.add_argument(
+            "--object-detect",
+            action="store_true",
+            help="PyTorchによる物体検出を有効化（FasterRCNN, COCOラベル）",
+        )
+        parser.add_argument(
+            "--object-labels",
+            type=str,
+            default="",
+            help="モザイク対象の物体ラベル（カンマ区切り, 例: person,car,dog）",
         )
 
         # 実行オプション
@@ -123,8 +137,23 @@ class CLIApplication:
             config.detection.confidence_threshold = args.confidence
             config.mosaic.pixelate = not args.blur
 
+            # 物体検出オプション
+            object_detector = None
+            object_labels = []
+            use_object_detection = getattr(args, "object_detect", False)
+            if use_object_detection:
+                object_detector = ObjectDetector()
+                if args.object_labels:
+                    object_labels = [
+                        s.strip() for s in args.object_labels.split(",") if s.strip()
+                    ]
+
             # アプリケーション初期化
             self.app = FaceMosaicApplication(config)
+            # ImageProcessorへ物体検出器を渡す
+            self.app.image_processor.object_detector = object_detector
+            self.app.image_processor.object_labels = object_labels
+            self.app.image_processor.use_object_detection = use_object_detection
 
             if not self.app.is_ready():
                 print("エラー: アプリケーションの初期化に失敗しました")

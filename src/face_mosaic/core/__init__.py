@@ -8,6 +8,7 @@ from .face_detector import FaceDetector
 from .image_processor import ImageProcessor
 from .batch_processor import BatchProcessor
 from .model_manager import ModelManager
+from .object_detector import ObjectDetector
 from .exceptions import *
 
 __all__ = [
@@ -16,4 +17,5 @@ __all__ = [
     "ImageProcessor",
     "BatchProcessor",
     "ModelManager",
+    "ObjectDetector",
 ]

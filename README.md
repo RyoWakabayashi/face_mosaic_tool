@@ -18,6 +18,7 @@ Face Mosaic Tool v2.0は、OpenCV YuNetを使用した高精度な顔検出と�
 - 📊 **詳細統計**: 包括的な処理結果と時間推定機能
 - 🖥️ **デュアルインターフェース**: CLI版とGUI版の両方を提供
 - 🧪 **テスト対応**: 単体テスト可能な設計
+- 🦾 **物体検出拡張**: PyTorch FasterRCNNによる物体検出・任意ラベルへのモザイク対応（`--object-detect`, `--object-labels`）
 
 ## 📋 システム要件
 
@@ -32,6 +33,8 @@ opencv-python>=4.5.4
 numpy>=1.21.0
 Pillow>=8.0.0
 tqdm>=4.60.0
+torch>=2.0.0
+torchvision>=0.15.0
 ```
 
 ## 🚀 インストール
@@ -205,6 +208,20 @@ except DetectionError as e:
 | `max_image_size` | 4096 | 最大画像サイズ |
 | `quality` | 95 | JPEG品質 |
 
+## 🆕 物体検出によるモザイク（オプション）
+
+PyTorch FasterRCNNを用いた物体検出で、任意のCOCOラベル（例: person, car, dog など）にもモザイクをかけられます。
+
+- 有効化: `--object-detect`
+- 対象ラベル指定: `--object-labels person,car,dog`
+
+例:
+```
+python main.py -i sample_inputs -o sample_outputs --object-detect --object-labels car
+```
+
+顔検出と物体検出は併用可能です。
+
 ## 📊 パフォーマンス
 
 ### 処理速度
@@ -331,6 +348,25 @@ logging.basicConfig(level=logging.DEBUG)
 ```bash
 python3 cli.py --info
 ```
+
+## 🗂️ モデルファイルの配置について
+
+PyTorch FasterRCNNの独自学習済みモデルを利用する場合は、
+`models/` ディレクトリを作成し、以下のようにファイルを配置してください。
+
+- `models/custom_fasterrcnn.pt` : トレーニング済みモデル本体
+- `models/labels.json` : ラベル名リスト（COCO形式、例: ["person", "car", ...]）
+
+`labels.json` が存在しない場合は、COCOデフォルトラベルが自動で使用されます。
+
+> 例: models ディレクトリ構成
+> ```
+> models/
+> ├── custom_fasterrcnn.pt
+> └── labels.json
+> ```
+
+`models/` 配下に .pth/.pt ファイルが複数ある場合は最初に見つかったものが自動で読み込まれます。
 
 ## 📝 更新履歴
 
