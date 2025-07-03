@@ -195,6 +195,41 @@ class GUIApplication:
             row=3, column=2, sticky=(tk.W, tk.E), padx=(0, 5), pady=(5, 0)
         )
 
+        # 物体検出方式
+        ttk.Label(section_frame, text="物体検出方式:").grid(
+            row=4, column=0, sticky=tk.W, padx=(0, 5), pady=(5, 0)
+        )
+        self.detector_type_var = tk.StringVar(value="yolo")
+        detector_type_frame = ttk.Frame(section_frame)
+        detector_type_frame.grid(row=4, column=1, sticky=tk.W, pady=(5, 0))
+        ttk.Radiobutton(
+            detector_type_frame,
+            text="FasterRCNN",
+            variable=self.detector_type_var,
+            value="fasterrcnn",
+            command=self.update_settings,
+        ).grid(row=0, column=0, padx=(0, 10))
+        ttk.Radiobutton(
+            detector_type_frame,
+            text="YOLO",
+            variable=self.detector_type_var,
+            value="yolo",
+            command=self.update_settings,
+        ).grid(row=0, column=1)
+
+        # 物体検出モデルパス
+        ttk.Label(section_frame, text="物体検出モデル(.pt):").grid(
+            row=5, column=0, sticky=tk.W, padx=(0, 5), pady=(5, 0)
+        )
+        self.object_model_var = tk.StringVar()
+        model_entry = ttk.Entry(
+            section_frame, textvariable=self.object_model_var, width=40
+        )
+        model_entry.grid(row=5, column=1, sticky=(tk.W, tk.E), padx=(0, 5), pady=(5, 0))
+        ttk.Button(
+            section_frame, text="参照", command=self.select_object_model_file
+        ).grid(row=5, column=2, padx=(0, 5), pady=(5, 0))
+
     def create_execution_section(self, parent: ttk.Frame, row: int) -> None:
         """実行ボタンセクション作成"""
         # セクションフレーム
@@ -351,6 +386,19 @@ class GUIApplication:
             self.output_var.set(directory)
             self.log(f"出力ディレクトリを選択: {directory}")
 
+    def select_object_model_file(self) -> None:
+        """物体検出モデルファイル選択"""
+        filetypes = [
+            ("PyTorch/YOLOv8 モデル", "*.pt"),
+            ("すべてのファイル", "*.*"),
+        ]
+        filename = filedialog.askopenfilename(
+            title="物体検出モデル(.pt)を選択", filetypes=filetypes
+        )
+        if filename:
+            self.object_model_var.set(filename)
+            self.log(f"物体検出モデルを選択: {filename}")
+
     def validate_inputs(self) -> bool:
         """入力値を検証"""
         if not self.input_var.get():
@@ -380,14 +428,39 @@ class GUIApplication:
             labels = [
                 s.strip() for s in self.object_labels_var.get().split(",") if s.strip()
             ]
+            detector_type = self.detector_type_var.get()
+            model_path = self.object_model_var.get() or None
             if use_obj:
-                from ..core.object_detector import ObjectDetector
+                if detector_type == "yolo":
+                    from ..core.yolov8_object_detector import YoloV8ObjectDetector
 
-                if (
-                    not hasattr(self.app.image_processor, "object_detector")
-                    or self.app.image_processor.object_detector is None
-                ):
-                    self.app.image_processor.object_detector = ObjectDetector()
+                    if not hasattr(
+                        self.app.image_processor, "object_detector"
+                    ) or not isinstance(
+                        self.app.image_processor.object_detector, YoloV8ObjectDetector
+                    ):
+                        self.app.image_processor.object_detector = YoloV8ObjectDetector(
+                            model_path=model_path
+                        )
+                    else:
+                        self.app.image_processor.object_detector.model = (
+                            YoloV8ObjectDetector(model_path=model_path).model
+                        )
+                else:
+                    from ..core.object_detector import ObjectDetector
+
+                    if not hasattr(
+                        self.app.image_processor, "object_detector"
+                    ) or not isinstance(
+                        self.app.image_processor.object_detector, ObjectDetector
+                    ):
+                        self.app.image_processor.object_detector = ObjectDetector(
+                            model_path=model_path
+                        )
+                    else:
+                        self.app.image_processor.object_detector.model = ObjectDetector(
+                            model_path=model_path
+                        ).model
                 self.app.image_processor.use_object_detection = True
                 self.app.image_processor.object_labels = labels
             else:

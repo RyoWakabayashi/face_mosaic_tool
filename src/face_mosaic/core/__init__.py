@@ -9,6 +9,7 @@ from .image_processor import ImageProcessor
 from .batch_processor import BatchProcessor
 from .model_manager import ModelManager
 from .object_detector import ObjectDetector
+from ..core.yolov8_object_detector import YoloV8ObjectDetector
 from .exceptions import *
 
 __all__ = [
@@ -18,4 +19,5 @@ __all__ = [
     "BatchProcessor",
     "ModelManager",
     "ObjectDetector",
+    "YoloV8ObjectDetector",
 ]

@@ -25,7 +25,9 @@ class ObjectDetector:
         # モデルパスが指定されていればそれをロード
         if model_path is None:
             # modelsディレクトリ配下の.pthファイルを自動検出
-            models_dir = os.path.join(os.path.dirname(__file__), "../../../models")
+            models_dir = os.path.join(
+                os.path.dirname(__file__), "../../../models/fasterrcnn"
+            )
             models_dir = os.path.abspath(models_dir)
             if os.path.isdir(models_dir):
                 candidates = [f for f in os.listdir(models_dir) if f.endswith(".pt")]

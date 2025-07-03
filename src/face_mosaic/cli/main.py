@@ -12,7 +12,6 @@ from typing import Optional
 from ..core.application import FaceMosaicApplication
 from ..config.settings import AppConfig
 from ..core.exceptions import FaceMosaicError
-from ..core.object_detector import ObjectDetector
 from ..utils.system_info import print_system_info
 
 
@@ -75,6 +74,19 @@ class CLIApplication:
             type=str,
             default="",
             help="モザイク対象の物体ラベル（カンマ区切り, 例: person,car,dog）",
+        )
+        parser.add_argument(
+            "--object-detector",
+            type=str,
+            default="yolo",
+            choices=["fasterrcnn", "yolo"],
+            help="物体検出器の種類 (yolo または fasterrcnn, デフォルト: yolo)",
+        )
+        parser.add_argument(
+            "--object-model",
+            type=str,
+            default=None,
+            help="物体検出モデルの.ptファイルパス（YOLOやFasterRCNNのカスタムモデル指定用）",
         )
 
         # 実行オプション
@@ -141,8 +153,18 @@ class CLIApplication:
             object_detector = None
             object_labels = []
             use_object_detection = getattr(args, "object_detect", False)
+            object_detector = None
             if use_object_detection:
-                object_detector = ObjectDetector()
+                detector_type = getattr(args, "object_detector", "yolo")
+                model_path = getattr(args, "object_model", None)
+                if detector_type == "yolo":
+                    from ..core.yolov8_object_detector import YoloV8ObjectDetector
+
+                    object_detector = YoloV8ObjectDetector(model_path=model_path)
+                else:
+                    from ..core.object_detector import ObjectDetector
+
+                    object_detector = ObjectDetector(model_path=model_path)
                 if args.object_labels:
                     object_labels = [
                         s.strip() for s in args.object_labels.split(",") if s.strip()

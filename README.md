@@ -400,21 +400,33 @@ PyTorch FasterRCNNの独自学習済みモデルを利用する場合は、
 - **ドキュメント**: 変更に応じてドキュメントを更新
 - **コミット**: 明確なコミットメッセージ
 
-## 📄 ライセンス
+## ライセンスとサードパーティー表記
 
-このプロジェクトはMITライセンスの下で公開されています。詳細は [LICENSE](LICENSE) ファイルをご覧ください。
+本ソフトウェアはMITライセンスですが、物体検出機能で利用している「ultralytics/ultralytics (YOLOv8)」は GNU Affero General Public License v3 (AGPL-3.0) で配布されています。
 
-## 🙏 謝辞
+- YOLOv8 (ultralytics): https://github.com/ultralytics/ultralytics
+- ライセンス: GNU Affero General Public License v3 (AGPL-3.0)
 
-- **OpenCV Team**: YuNet顔検出モデルの提供
-- **Python Community**: 優れたライブラリとツールの提供
-- **Contributors**: プロジェクトへの貢献
+本リポジトリを公開・配布する場合は、AGPL-3.0の条件に従い、
+- サードパーティーライセンス（AGPL-3.0）を明記
+- 利用者がultralytics/ultralyticsのソースコードを取得できるよう案内
+- 本リポジトリのMITライセンスと併記
+が必要です。
 
-## 📞 サポート
+### 参考: YOLOv8 (ultralytics) ライセンス抜粋
 
-- **Issues**: [GitHub Issues](https://github.com/your-username/face-mosaic-tool/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/your-username/face-mosaic-tool/discussions)
-- **Documentation**: [docs/](docs/) ディレクトリ
+> This program is free software: you can redistribute it and/or modify
+> it under the terms of the GNU Affero General Public License as published by
+> the Free Software Foundation, either version 3 of the License, or
+> (at your option) any later version.
+
+> This program is distributed in the hope that it will be useful,
+> but WITHOUT ANY WARRANTY; without even the implied warranty of
+> MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+> GNU Affero General Public License for more details.
+
+> You should have received a copy of the GNU Affero General Public License
+> along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 ---
 
