@@ -13,8 +13,8 @@ python3 --version  # Python 3.8以上が必要
 ### 2. インストール
 
 ```bash
-git clone https://github.com/your-username/face-mosaic-tool.git
-cd face-mosaic-tool
+git clone https://github.com/RyoWakabayashi/face_mosaic_tool.git
+cd face_mosaic_tool
 pip install -r requirements.txt
 ```
 

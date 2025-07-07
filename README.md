@@ -8,7 +8,7 @@ YuNet専用高精度顔モザイク処理ツール - リファクタリング版
 
 ## 🎯 概要
 
-Face Mosaic Tool v2.0は、OpenCV YuNetを使用した高精度な顔検出とモザイク処理を提供するPythonアプリケーションです。リファクタリングにより、保守性・拡張性・テスト可能性が大幅に向上しました。
+Face Mosaic Tool v2.0は、OpenCV YuNetを使用した高精度な顔検出とモザイク処理を提供するPythonアプリケーションです。
 
 ### 主な特徴
 
@@ -23,27 +23,15 @@ Face Mosaic Tool v2.0は、OpenCV YuNetを使用した高精度な顔検出と�
 ## 📋 システム要件
 
 - **Python**: 3.8以上
-- **OpenCV**: 4.5.4以上（YuNetサポート必須）
 - **OS**: Windows, macOS, Linux
-
-### 必要なライブラリ
-
-```
-opencv-python>=4.5.4
-numpy>=1.21.0
-Pillow>=8.0.0
-tqdm>=4.60.0
-torch>=2.0.0
-torchvision>=0.15.0
-```
 
 ## 🚀 インストール
 
 ### 1. リポジトリのクローン
 
 ```bash
-git clone https://github.com/your-username/face-mosaic-tool.git
-cd face-mosaic-tool
+git clone https://github.com/RyoWakabayashi/face_mosaic_tool.git
+cd face_mosaic_tool
 ```
 
 ### 2. 依存関係のインストール
@@ -66,7 +54,7 @@ python3 cli.py --info
 
 ```bash
 # ディレクトリ処理
-python3 cli.py -i input_directory -o output_directory
+python3 cli.py -i input_dir -o output_dir
 
 # 単一ファイル処理
 python3 cli.py -i image.jpg -o processed_image.jpg
@@ -222,6 +210,18 @@ python main.py -i sample_inputs -o sample_outputs --object-detect --object-label
 
 顔検出と物体検出は併用可能です。
 
+### デフォルトのCOCOラベル
+
+デフォルトでは YOLOv8 の COCOラベルが使用されます。
+
+指定できるラベルの一覧は以下の URL を参照してください。
+
+<https://github.com/ultralytics/ultralytics/blob/main/ultralytics/cfg/datasets/coco.yaml>
+
+### カスタムモデル
+
+独自の学習済みモデルを使用する場合は、 `--object-model` オプションでモデルファイルを指定できます。
+
 ## 📊 パフォーマンス
 
 ### 処理速度
@@ -331,7 +331,7 @@ pip install --upgrade opencv-python
 ```
 エラー: メモリが不足しています
 ```
-**解決方法**: 
+**解決方法**:
 - 画像サイズを小さくする
 - バッチサイズを減らす
 - システムメモリを増やす
